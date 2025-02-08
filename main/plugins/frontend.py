@@ -1,21 +1,13 @@
-#Developer : Gagan 
-
-
 import time, os
-
 import logging
 import json
 from .. import bot as gagan
 from .. import userbot, Bot
-from .. import FORCESUB as fs
 from main.plugins.pyroplug import get_msg
-from main.plugins.helpers import get_link, join, screenshot
+from main.plugins.helpers import get_link, join
 
 from telethon import events
 from pyrogram.errors import FloodWait
-
-#from ethon.telefunc import force_sub
-from main.plugins.helpers import force_sub
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -23,14 +15,11 @@ logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.INFO)
 logging.getLogger("telethon").setLevel(logging.INFO)
 
-ft = f"To use this bot you've to join @{fs}."
-
 message = "Send me the message link you want to start saving from, as a reply to this message."
-          
+
 process=[]
 timer=[]
 user=[]
-
 
 @gagan.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
 async def clone(event):
@@ -46,18 +35,11 @@ async def clone(event):
         await event.reply("max 10 links per message")
         return
     for li in li:
-        #1239
-    
         try:
             link = get_link(li)
             if not link:
                 return
-    
         except TypeError:
-            return
-        s, r = await force_sub(event.client, fs, event.sender_id, ft)
-        if s == True:
-            await event.reply(r)
             return
         edit = await event.reply("Processing!")
         if f'{int(event.sender_id)}' in user:
@@ -67,7 +49,6 @@ async def clone(event):
             url = li
             url_parts = url.split("|")
             if len(url_parts) == 2:
-            
                 file_name = url_parts[1]
         if file_name is not None:
             file_name = file_name.strip()                
