@@ -48,18 +48,15 @@ async def remt(event):
 
 @gagan.on(events.NewMessage(pattern=f"^{S}"))
 async def start_command(event):
-    # Creating inline keyboard with buttons
     buttons = [
         [Button.inline("SET THUMB", data="set"),
          Button.inline("REM THUMB", data="rem")],
         [Button.url("Join Channel", url="https://telegram.dog/HarishSoni")]
     ]
 
-    # Sending photo with caption and buttons
     await gagan.send_file(
         event.chat_id,
         file=START_PIC,
         caption=TEXT,
         buttons=buttons
     )
-
