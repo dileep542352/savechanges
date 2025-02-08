@@ -1,5 +1,3 @@
-#Github.com/devgaganin
-
 from pyrogram.errors import FloodWait, InviteHashInvalid, InviteHashExpired, UserAlreadyParticipant
 from telethon import errors, events
 
@@ -20,8 +18,6 @@ logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.getLogger("telethon").setLevel(logging.WARNING)
 
-
-#to get width, height and duration(in sec) of a video
 def video_metadata(file):
     vcap = cv2.VideoCapture(f'{file}')
     width = round(vcap.get(cv2.CAP_PROP_FRAME_WIDTH ))
@@ -30,8 +26,6 @@ def video_metadata(file):
     frame_count = vcap.get(cv2.CAP_PROP_FRAME_COUNT)
     duration = round(frame_count / fps)
     return {'width' : width, 'height' : height, 'duration' : duration }
-
-#Join private chat-------------------------------------------------------------------------------------------------------------
 
 async def join(client, invite_link):
     try:
@@ -46,23 +40,7 @@ async def join(client, invite_link):
     except Exception as e:
         print(e)
         return f"{e} \nCould not join, try joining manually."
-    
-    
-    
-#----------------------------------
-async def force_sub(client, channel, id, ft):
-    s, r = False, None
-    try:
-        x = await client(GetParticipantRequest(channel=channel, participant=int(id)))
-        left = x.stringify()
-        s, r = (True, ft) if 'left' in left else (False, None)
-    except UserNotParticipantError:
-        s, r = True, f"To use this bot you've to join @{channel}."
-    except Exception:
-        s, r = True, "ERROR: Add in ForceSub channel, or check your channel id."
-    return s, r
 
-#------------------------------
 def TimeFormatter(milliseconds) -> str:
     milliseconds = int(milliseconds) * 1000
     seconds, milliseconds = divmod(int(milliseconds), 1000)
@@ -78,11 +56,8 @@ def TimeFormatter(milliseconds) -> str:
     )
     return tmp[:-2]
 
-#--------------------------------------------
 def humanbytes(size):
     size = int(size)
-    # https://stackoverflow.com/a/49361727/4723940
-    # 2**10 = 1024
     if not size:
         return ""
     power = 2**10
@@ -93,10 +68,6 @@ def humanbytes(size):
         n += 1
     return f"{str(round(size, 2))} {Dic_powerN[n]}B"
 
-
-#Regex---------------------------------------------------------------------------------------------------------------
-#to get the url from event
-
 def get_link(string):
     regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
     url = re.findall(regex,string)
@@ -104,8 +75,6 @@ def get_link(string):
         return link if (link := [x[0] for x in url][0]) else False
     except Exception:
         return False
-    
-#Screenshot---------------------------------------------------------------------------------------------------------------
 
 def hhmmss(seconds):
     return time.strftime('%H:%M:%S',time.gmtime(seconds))
@@ -136,4 +105,4 @@ async def screenshot(video, duration, sender):
     if os.path.isfile(out):
         return out
     else:
-        None       
+        return None 
