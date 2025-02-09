@@ -155,5 +155,9 @@ async def start_command(event):
         caption=TEXT,
         buttons=buttons
     )
-            
+
 TEXTING = """
+Execute /batch command only when you are 100% sure.
+Because /cancel event is removed to make the bot work perfectly.
+Thanks - Shaurya
+"""
