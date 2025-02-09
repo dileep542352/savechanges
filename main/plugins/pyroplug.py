@@ -1,16 +1,11 @@
 import asyncio, time, os
-
-from pyrogram.enums import ParseMode , MessageMediaType
-
+from pyrogram.enums import ParseMode, MessageMediaType
 from .. import Bot, bot
 from main.plugins.progress import progress_for_pyrogram
-from main.plugins.helpers import screenshot
-
+from main.plugins.helpers import screenshot, video_metadata
 from pyrogram import Client, filters
 from pyrogram.errors import ChannelBanned, ChannelInvalid, ChannelPrivate, ChatIdInvalid, ChatInvalid, FloodWait
-from main.plugins.helpers import video_metadata
 from telethon import events
-
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
@@ -65,27 +60,21 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
             chat = int(msg_link.split("/")[-2])
         file = ""
         try:
-            msg = await userbot.get_messages(chat_id = chat, message_ids = msg_id)
+            msg = await userbot.get_messages(chat_id=chat, message_ids=msg_id)
             if msg.service is not None:
-                await client.delete_messages(
-                    chat_id=sender,
-                    message_ids=edit_id
-                )
+                await client.delete_messages(chat_id=sender, message_ids=edit_id)
                 return None
             if msg.empty is not None:
-                await client.delete_messages(
-                    chat_id=sender,
-                    message_ids=edit_id
-                )
+                await client.delete_messages(chat_id=sender, message_ids=edit_id)
                 return None            
             
-            if msg.media and msg.media==MessageMediaType.WEB_PAGE:
+            if msg.media and msg.media == MessageMediaType.WEB_PAGE:
                 a = b = True
                 edit = await client.edit_message_text(sender, edit_id, "Cloning.")
-                if '--'  in msg.text.html or '**' in msg.text.html or '__' in msg.text.html or '~~' in msg.text.html or '||' in msg.text.html or '```' in msg.text.html or '`' in msg.text.html:
+                if any(tag in msg.text.html for tag in ['--', '**', '__', '~~', '||', '```', '`']):
                     await client.send_message(sender, msg.text.html, parse_mode=ParseMode.HTML)
                     a = False
-                if '<b>' in msg.text.markdown or '<i>' in msg.text.markdown or '<em>' in msg.text.markdown  or '<u>' in msg.text.markdown or '<s>' in msg.text.markdown or '<spoiler>' in msg.text.markdown or '<a href=>' in msg.text.markdown or '<pre' in msg.text.markdown or '<code>' in msg.text.markdown or '<emoji' in msg.text.markdown:
+                if any(tag in msg.text.markdown for tag in ['<b>', '<i>', '<em>', '<u>', '<s>', '<spoiler>', '<a href=>', '<pre', '<code>', '<emoji']):
                     await client.send_message(sender, msg.text.markdown, parse_mode=ParseMode.MARKDOWN)
                     b = False
                 if a and b:
@@ -95,17 +84,17 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
             if not msg.media and msg.text:
                 a = b = True
                 edit = await client.edit_message_text(sender, edit_id, "Cloning.")
-                if '--'  in msg.text.html or '**' in msg.text.html or '__' in msg.text.html or '~~' in msg.text.html or '||' in msg.text.html or '```' in msg.text.html or '`' in msg.text.html:
+                if any(tag in msg.text.html for tag in ['--', '**', '__', '~~', '||', '```', '`']):
                     await client.send_message(sender, msg.text.html, parse_mode=ParseMode.HTML)
                     a = False
-                if '<b>' in msg.text.markdown or '<i>' in msg.text.markdown or '<em>' in msg.text.markdown  or '<u>' in msg.text.markdown or '<s>' in msg.text.markdown or '<spoiler>' in msg.text.markdown or '<a href=>' in msg.text.markdown or '<pre' in msg.text.markdown or '<code>' in msg.text.markdown or '<emoji' in msg.text.markdown:
+                if any(tag in msg.text.markdown for tag in ['<b>', '<i>', '<em>', '<u>', '<s>', '<spoiler>', '<a href=>', '<pre', '<code>', '<emoji']):
                     await client.send_message(sender, msg.text.markdown, parse_mode=ParseMode.MARKDOWN)
                     b = False
                 if a and b:
                     await client.send_message(sender, msg.text.markdown, parse_mode=ParseMode.MARKDOWN)
                 await edit.delete()
                 return None
-            if msg.media==MessageMediaType.POLL:
+            if msg.media == MessageMediaType.POLL:
                 await client.edit_message_text(sender, edit_id, 'poll media cant be saved')
                 return 
             edit = await client.edit_message_text(sender, edit_id, "Trying to Download.")
@@ -113,12 +102,7 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
             file = await userbot.download_media(
                 msg,
                 progress=progress_for_pyrogram,
-                progress_args=(
-                    client,
-                    "**__Unrestricting__**\n ",
-                    edit,
-                    time.time()
-                )
+                progress_args=(client, "**__Unrestricting__**\n ", edit, time.time())
             )  
           
             path = file
@@ -132,9 +116,7 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
                     os.rename(file, path) 
                     file = str(file).split(".")[0] + ".mp4"
                 data = video_metadata(file)
-                duration = data["duration"]
-                wi= data["width"]
-                hi= data["height"]
+                duration, width, height = data["duration"], data["width"], data["height"]
 
                 if file_n != '':
                     if '.' in file_n:
@@ -144,29 +126,19 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
 
                     os.rename(file, path)
                     file = path
-                try:
-                    thumb_path =thumbnail(sender)
-                except Exception as e:
-                    logging.info(e)
-                    thumb_path = None
+                thumb_path = thumbnail(sender)
                 
-                caption = msg.caption if msg.caption else ""
                 await client.send_video(
                     chat_id=sender,
                     video=path,
                     caption=caption,
                     supports_streaming=True,
                     duration=duration,
-                    height=hi,
-                    width=wi,
+                    height=height,
+                    width=width,
                     thumb=thumb_path,
                     progress=progress_for_pyrogram,
-                    progress_args=(
-                        client,
-                        '**__Uploading__**\n ',
-                        upm,
-                        time.time()
-                    )
+                    progress_args=(client, '**__Uploading__**\n ', upm, time.time())
                 )
             elif str(file).split(".")[-1] in ['jpg', 'jpeg', 'png', 'webp']:
                 if file_n != '':
@@ -178,9 +150,7 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
                     os.rename(file, path)
                     file = path
 
-                caption = msg.caption if msg.caption else ""
                 await upm.edit("__Uploading photo...__")
-
                 await bot.send_file(sender, path, caption=caption)
             else:
                 if file_n != '':
@@ -191,21 +161,15 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
 
                     os.rename(file, path)
                     file = path
-                thumb_path=thumbnail(sender)
+                thumb_path = thumbnail(sender)
                 
-                caption = msg.caption if msg.caption else ""
                 await client.send_document(
                     sender,
                     path, 
                     caption=caption,
                     thumb=thumb_path,
                     progress=progress_for_pyrogram,
-                    progress_args=(
-                        client,
-                        '**__Uploading__**\n',
-                        upm,
-                        time.time()
-                    )
+                    progress_args=(client, '**__Uploading__**\n', upm, time.time())
                 )
             os.remove(file)
             await upm.delete()
@@ -219,3 +183,14 @@ async def get_msg(userbot, client, sender, edit_id, msg_link, i, file_n):
         await client.copy_message(sender, chat, msg_id)
         await edit.delete()
         return None   
+
+async def get_bulk_msg(userbot, client, sender, msg_link, msg_id):
+    """
+    This function is used to get multiple messages in bulk.
+    """
+    try:
+        msg = await userbot.get_messages(chat_id=msg_link.split("/")[-2], message_ids=msg_id)
+        await client.send_message(sender, msg)
+    except Exception as e:
+        logging.info(f"An error occurred in get_bulk_msg: {e}")
+        await client.send_message(sender, f"An error occurred while processing the message {msg_id}: {str(e)}")
