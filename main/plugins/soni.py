@@ -1,18 +1,12 @@
-#Join t.me/dev_gagan
-
 import logging
 import time, os, asyncio
 import json
-
 from .. import bot as gagan
 from .. import userbot, Bot, AUTH, SUDO_USERS
-
 from main.plugins.pyroplug import check, get_bulk_msg
 from main.plugins.helpers import get_link, screenshot
-
 from telethon import events, Button, errors
 from telethon.tl.types import DocumentAttributeVideo
-
 from pyrogram import Client 
 from pyrogram.errors import FloodWait
 
@@ -22,14 +16,8 @@ logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.getLogger("telethon").setLevel(logging.WARNING)
 
-
 batch = []
 ids = []
-
-'''async def get_pvt_content(event, chat, id):
-    msg = await userbot.get_messages(chat, ids=id)
-    await event.client.send_message(event.chat_id, msg) 
-'''
 
 @gagan.on(events.NewMessage(incoming=True, pattern='/batch'))
 async def _batch(event):
@@ -38,7 +26,7 @@ async def _batch(event):
         return await event.reply("You've already started one batch, wait for it to complete Baby!")
     async with gagan.conversation(event.chat_id) as conv: 
         if not s:
-            await conv.send_message(f"Send me the message link you want to start saving from, as a reply to this message.", buttons=Button.force_reply())
+            await conv.send_message("Send me the message link you want to start saving from, as a reply to this message.", buttons=Button.force_reply())
             try:
                 link = await conv.get_reply()
                 try:
@@ -46,20 +34,18 @@ async def _batch(event):
                 except Exception:
                     await conv.send_message("No link found.")
             except Exception as e:
-                #print(e)
                 logger.info(e)
                 return await conv.send_message("Cannot wait more longer for your response!")
-            await conv.send_message(f"Send me the number of files/range you want to save from the given message, as a reply to this message.", buttons=Button.force_reply())
+            await conv.send_message("Send me the number of files/range you want to save from the given message, as a reply to this message.", buttons=Button.force_reply())
             try:
                 _range = await conv.get_reply()
             except Exception as e:
                 logger.info(e)
-                #print(e)
                 return await conv.send_message("Cannot wait more longer for your response!")
             try:
                 value = int(_range.text)
                 if value > 1000000:
-                    return await conv.send_message("You can only get upto 100000 files in a single batch.")
+                    return await conv.send_message("You can only get up to 100000 files in a single batch.")
             except ValueError:
                 return await conv.send_message("Range must be an integer!")
             for i in range(value):
@@ -70,7 +56,7 @@ async def _batch(event):
                 return
             batch.append(f'{event.sender_id}')
             cd = await conv.send_message("**Batch process ongoing...**\n\nProcess completed: ", 
-                                    buttons=[[Button.url("Join Channel", url="http://t.me/HarishSoni")]])
+                                         buttons=[[Button.url("Join Channel", url="http://t.me/HarishSoni")]])
             co = await run_batch(userbot, Bot, event.sender_id, cd, _link) 
             try: 
                 if co == -2:
@@ -87,7 +73,6 @@ async def cancel(event):
     ids.clear()
     batch.clear()
 
-    
 async def run_batch(userbot, client, sender, countdown, link):
     for i in range(len(ids)):
         timer = 6
@@ -110,7 +95,6 @@ async def run_batch(userbot, client, sender, countdown, link):
             timer = 1 if i < 500 else 2
         try: 
             count_down = f"**Batch process ongoing.**\n\nProcess completed: {i+1}"
-            #a =ids[i]
             try:
                 msg_id = int(link.split("/")[-1])
             except ValueError:
@@ -121,8 +105,7 @@ async def run_batch(userbot, client, sender, countdown, link):
             integer = msg_id + int(ids[i])
             await get_bulk_msg(userbot, client, sender, link, integer)
             protection = await client.send_message(sender, f"Sleeping for `{timer}` seconds to avoid Floodwaits and Protect account!")
-            await countdown.edit(count_down, 
-                                 buttons=[[Button.url("Join Channel", url="https://t.me/dev_gagan")]])
+            await countdown.edit(count_down, buttons=[[Button.url("Join Channel", url="https://t.me/dev_gagan")]])
             await asyncio.sleep(timer)
             await protection.delete()
         except IndexError as ie:
@@ -142,12 +125,10 @@ async def run_batch(userbot, client, sender, countdown, link):
                 try:
                     await get_bulk_msg(userbot, client, sender, link, integer)
                 except Exception as e:
-                    #print(e)
                     logger.info(e)
                     if countdown.text != count_down:
                         await countdown.edit(count_down, buttons=[[Button.url("Join Channel", url="http://t.me/dev_gagan")]])
         except Exception as e:
-            #print(e)
             logger.info(e)
             await client.send_message(sender, f"An error occurred during cloning, batch will continue.\n\n**Error:** {str(e)}")
             if countdown.text != count_down:
@@ -162,14 +143,12 @@ TEXT = "👋 Hi, This is 'Paid Restricted Content Saver' bot Made with ❤️ by
 
 @gagan.on(events.NewMessage(pattern=f"^{C}"))
 async def start_command(event):
-    # Creating inline keyboard with buttons
     buttons = [
         [Button.inline("Cancel", data="cancel"),
          Button.inline("Cancel", data="cancel")],
         [Button.url("Join Channel", url="https://telegram.dog/HarishSoni")]
     ]
 
-    # Sending photo with caption and buttons
     await gagan.send_file(
         event.chat_id,
         file=START_PIC,
@@ -178,10 +157,3 @@ async def start_command(event):
     )
             
 TEXTING = """
-```
-Execute /batch command only when you 100% sure.
-Bcz /cancel event is removed to make bot work perfectly.
-Thanks - Shaurya
-
-```
-"""
